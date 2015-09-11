@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/scottcagno/safemap"
+	"github.com/cagnosolutions/safemap"
 )
 
 var COUNT = 100000
