@@ -1,6 +1,10 @@
 package safemap
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/cagnosolutions/safemap/util"
+)
 
 var SHARD_COUNT int
 
@@ -11,11 +15,11 @@ type Shard struct {
 	sync.RWMutex
 }
 
-func SafeMapInstance(n int) *SafeMap {
-	if n == 0 || n%2 != 0 {
-		n = 16
+func NewSafeMap(shardCount int) *SafeMap {
+	if shardCount == 0 || shardCount%2 != 0 {
+		shardCount = 16
 	}
-	SHARD_COUNT = n
+	SHARD_COUNT = shardCount
 	m := make(SafeMap, SHARD_COUNT)
 	for i := 0; i < SHARD_COUNT; i++ {
 		m[i] = &Shard{
@@ -26,7 +30,7 @@ func SafeMapInstance(n int) *SafeMap {
 }
 
 func (m *SafeMap) GetShard(key string) *Shard {
-	bucket := Sum32([]byte(key)) % uint32(SHARD_COUNT)
+	bucket := util.Sum32([]byte(key)) % uint32(SHARD_COUNT)
 	//fmt.Printf("key: %q, bucket: %d\n", key, bucket) // <= Remove this at some point
 	return (*m)[bucket]
 }
