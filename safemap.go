@@ -35,11 +35,13 @@ func (m *SafeMap) GetShard(key string) *Shard {
 	return (*m)[bucket]
 }
 
-func (m *SafeMap) Set(key string, val interface{}) {
+func (m *SafeMap) Set(key string, val interface{}) bool {
 	shard := m.GetShard(key)
 	shard.Lock()
 	shard.items[key] = val
+	_, ok := shard.items[key]
 	shard.Unlock()
+	return ok
 }
 
 func (m *SafeMap) Get(key string) (interface{}, bool) {
@@ -50,12 +52,15 @@ func (m *SafeMap) Get(key string) (interface{}, bool) {
 	return val, ok
 }
 
-func (m *SafeMap) Del(key string) {
+func (m *SafeMap) Del(key string) bool {
+	var ok bool
 	if shard := m.GetShard(key); shard != nil {
 		shard.Lock()
 		delete(shard.items, key)
+		_, ok = shard.items[key]
 		shard.Unlock()
 	}
+	return !ok
 }
 
 type EntrySet struct {

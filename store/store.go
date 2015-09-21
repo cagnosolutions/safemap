@@ -21,14 +21,14 @@ func NewSafeMapStore(shardCount int) *SafeMapStore {
 	}
 }
 
-func (sms *SafeMapStore) Set(key, fld string, val interface{}) {
+func (sms *SafeMapStore) Set(key, fld string, val interface{}) bool {
 	sm, ok := sms.GetSafeMap(key)
 	if !ok {
 		sms.Lock()
 		sms.SafeMaps[key] = safemap.NewSafeMap(safemap.SHARD_COUNT)
 		sms.Unlock()
 	}
-	sm.Set(fld, val)
+	return sm.Set(fld, val)
 }
 
 func (sms *SafeMapStore) Get(key, fld string) (interface{}, bool) {
@@ -38,10 +38,11 @@ func (sms *SafeMapStore) Get(key, fld string) (interface{}, bool) {
 	return nil, false
 }
 
-func (sms *SafeMapStore) Del(key, fld string) {
+func (sms *SafeMapStore) Del(key, fld string) bool {
 	if sm, ok := sms.GetSafeMap(key); ok {
-		sm.Del(fld)
+		return sm.Del(fld)
 	}
+	return true
 }
 
 func (sms *SafeMapStore) AddStore(key string) {
