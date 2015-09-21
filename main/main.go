@@ -17,8 +17,7 @@ func ms() int64 {
 
 func main() {
 
-	m1 := safemap.SafeMapInstance(32)
-	//m2 := make(map[string][]byte)
+	sm := safemap.NewSafeMap(32)
 
 	fmt.Printf("Adding %d elements to map...\n", COUNT)
 
@@ -27,8 +26,7 @@ func main() {
 	for i := 0; i < COUNT; i++ {
 		key := fmt.Sprintf("key-%d", i)
 		val := fmt.Sprintf("val-%d", i)
-		m1.Set(key, []byte(val))
-		//m2[key] = []byte(val)
+		sm.Set(key, []byte(val))
 	}
 
 	fmt.Printf("Took %dms\n", ms()-t1)
