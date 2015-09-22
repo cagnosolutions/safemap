@@ -45,12 +45,16 @@ func (sms *SafeMapStore) Del(key, fld string) bool {
 	return true
 }
 
-func (sms *SafeMapStore) AddStore(key string) {
+func (sms *SafeMapStore) AddStore(key string) bool {
 	if _, ok := sms.GetSafeMap(key); !ok {
 		sms.Lock()
 		sms.SafeMaps[key] = safemap.NewSafeMap(safemap.SHARD_COUNT)
 		sms.Unlock()
 	}
+	sms.RLock()
+	_, ok := sms.SafeMaps[key]
+	sms.RUnlock()
+	return ok
 }
 
 func (sms *SafeMapStore) GetSafeMap(key string) (*safemap.SafeMap, bool) {
@@ -60,10 +64,13 @@ func (sms *SafeMapStore) GetSafeMap(key string) (*safemap.SafeMap, bool) {
 	return sm, ok
 }
 
-func (sms *SafeMapStore) DelStore(key string) {
+func (sms *SafeMapStore) DelStore(key string) bool {
+	var ok bool
 	if _, ok := sms.GetSafeMap(key); ok {
 		sms.Lock()
 		delete(sms.SafeMaps, key)
+		_, ok = sms.SafeMaps[key]
 		sms.Unlock()
 	}
+	return !ok
 }
