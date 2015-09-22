@@ -26,6 +26,7 @@ func (sms *SafeMapStore) Set(key, fld string, val interface{}) bool {
 	if !ok {
 		sms.Lock()
 		sms.SafeMaps[key] = safemap.NewSafeMap(safemap.SHARD_COUNT)
+		sm = sms.SafeMaps[key]
 		sms.Unlock()
 	}
 	return sm.Set(fld, val)

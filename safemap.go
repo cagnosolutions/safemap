@@ -20,23 +20,22 @@ func NewSafeMap(shardCount int) *SafeMap {
 		shardCount = 16
 	}
 	SHARD_COUNT = shardCount
-	m := make(SafeMap, SHARD_COUNT)
+	sm := make(SafeMap, SHARD_COUNT)
 	for i := 0; i < SHARD_COUNT; i++ {
-		m[i] = &Shard{
+		sm[i] = &Shard{
 			items: make(map[string]interface{}),
 		}
 	}
-	return &m
+	return &sm
 }
 
-func (m *SafeMap) GetShard(key string) *Shard {
+func (sm *SafeMap) GetShard(key string) *Shard {
 	bucket := util.Sum32([]byte(key)) % uint32(SHARD_COUNT)
-	//fmt.Printf("key: %q, bucket: %d\n", key, bucket) // <= Remove this at some point
-	return (*m)[bucket]
+	return (*sm)[bucket]
 }
 
-func (m *SafeMap) Set(key string, val interface{}) bool {
-	shard := m.GetShard(key)
+func (sm *SafeMap) Set(key string, val interface{}) bool {
+	shard := sm.GetShard(key)
 	shard.Lock()
 	shard.items[key] = val
 	_, ok := shard.items[key]
@@ -44,17 +43,17 @@ func (m *SafeMap) Set(key string, val interface{}) bool {
 	return ok
 }
 
-func (m *SafeMap) Get(key string) (interface{}, bool) {
-	shard := m.GetShard(key)
+func (sm *SafeMap) Get(key string) (interface{}, bool) {
+	shard := sm.GetShard(key)
 	shard.RLock()
 	val, ok := shard.items[key]
 	shard.RUnlock()
 	return val, ok
 }
 
-func (m *SafeMap) Del(key string) bool {
+func (sm *SafeMap) Del(key string) bool {
 	var ok bool
-	if shard := m.GetShard(key); shard != nil {
+	if shard := sm.GetShard(key); shard != nil {
 		shard.Lock()
 		delete(shard.items, key)
 		_, ok = shard.items[key]
@@ -68,10 +67,10 @@ type EntrySet struct {
 	Val interface{}
 }
 
-func (m *SafeMap) Iter() <-chan EntrySet {
+func (sm *SafeMap) Iter() <-chan EntrySet {
 	ch := make(chan EntrySet)
 	go func() {
-		for _, shard := range *m {
+		for _, shard := range *sm {
 			shard.RLock()
 			for key, val := range shard.items {
 				ch <- EntrySet{key, val}
